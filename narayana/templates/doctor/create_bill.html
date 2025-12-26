@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}Create Bill - MediCare HMS{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2 class="mb-4"><i class="bi bi-receipt"></i> {{ 'Update' if existing_bill else 'Create' }} Bill</h2>
+
+    <div class="row g-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-file-earmark-text"></i> Bill Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4 p-3 medical-accent" style="background-color: var(--light-bg); border-radius: 0.5rem;">
+                        <h6 class="text-primary mb-2">Appointment Information</h6>
+                        <p class="mb-1"><strong>Patient:</strong> {{ appointment.patient.user.full_name or appointment.patient.user.username }}</p>
+                        <p class="mb-1"><strong>Medical ID:</strong> {{ appointment.patient.medical_id }}</p>
+                        <p class="mb-1"><strong>Date:</strong> {{ appointment.appointment_date }}</p>
+                        <p class="mb-0"><strong>Time:</strong> {{ appointment.appointment_time.strftime('%H:%M') }}</p>
+                    </div>
+
+                    <form method="POST">
+                        <h6 class="mb-3 text-primary"><i class="bi bi-cash-stack"></i> Fee Breakdown</h6>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="consultation_fee" class="form-label">Consultation Fee ($)</label>
+                                <input type="number" step="0.01" class="form-control" id="consultation_fee" name="consultation_fee" 
+                                       value="{{ existing_bill.consultation_fee if existing_bill else doctor.consultation_fee or 50 }}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="lab_charges" class="form-label">Lab/Test Charges ($)</label>
+                                <input type="number" step="0.01" class="form-control" id="lab_charges" name="lab_charges" 
+                                       value="{{ existing_bill.lab_charges if existing_bill else 0 }}">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="medicine_charges" class="form-label">Medicine Charges ($)</label>
+                                <input type="number" step="0.01" class="form-control" id="medicine_charges" name="medicine_charges" 
+                                       value="{{ existing_bill.medicine_charges if existing_bill else 0 }}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="procedure_charges" class="form-label">Procedure Charges ($)</label>
+                                <input type="number" step="0.01" class="form-control" id="procedure_charges" name="procedure_charges" 
+                                       value="{{ existing_bill.procedure_charges if existing_bill else 0 }}">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="other_charges" class="form-label">Other Charges ($)</label>
+                                <input type="number" step="0.01" class="form-control" id="other_charges" name="other_charges" 
+                                       value="{{ existing_bill.other_charges if existing_bill else 0 }}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="discount_amount" class="form-label">Discount ($)</label>
+                                <input type="number" step="0.01" class="form-control" id="discount_amount" name="discount_amount" 
+                                       value="{{ existing_bill.discount_amount if existing_bill else 0 }}">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="notes" class="form-label">Notes (Optional)</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="3">{{ existing_bill.notes if existing_bill else '' }}</textarea>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle"></i> {{ 'Update' if existing_bill else 'Create' }} Bill
+                            </button>
+                            <a href="{{ url_for('doctor.appointments') }}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-info-circle"></i> Billing Guide</h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="text-primary">Standard Charges:</h6>
+                    <ul class="small">
+                        <li><strong>Consultation:</strong> $50 - $200</li>
+                        <li><strong>Lab Tests:</strong> $20 - $500</li>
+                        <li><strong>Medicines:</strong> As per prescription</li>
+                        <li><strong>Procedures:</strong> $100 - $5000</li>
+                    </ul>
+
+                    <hr>
+
+                    <h6 class="text-primary">Tax Information:</h6>
+                    <p class="small mb-0">5% tax will be automatically calculated on the subtotal.</p>
+
+                    <hr>
+
+                    <h6 class="text-primary">Payment Methods:</h6>
+                    <ul class="small mb-0">
+                        <li>Cash</li>
+                        <li>Credit/Debit Card</li>
+                        <li>Insurance</li>
+                        <li>Online Payment</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Auto-calculate total
+document.querySelectorAll('input[type="number"]').forEach(input => {
+    input.addEventListener('input', calculateTotal);
+});
+
+function calculateTotal() {
+    const consultation = parseFloat(document.getElementById('consultation_fee').value) || 0;
+    const lab = parseFloat(document.getElementById('lab_charges').value) || 0;
+    const medicine = parseFloat(document.getElementById('medicine_charges').value) || 0;
+    const procedure = parseFloat(document.getElementById('procedure_charges').value) || 0;
+    const other = parseFloat(document.getElementById('other_charges').value) || 0;
+    const discount = parseFloat(document.getElementById('discount_amount').value) || 0;
+    
+    const subtotal = consultation + lab + medicine + procedure + other;
+    const tax = subtotal * 0.05;
+    const total = subtotal + tax - discount;
+    
+    console.log('Estimated Total: $' + total.toFixed(2));
+}
+</script>
+{% endblock %}

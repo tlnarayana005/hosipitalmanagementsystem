@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Find Doctors - HMS{% endblock %}
+
+{% block content %}
+<h2>Find Doctors</h2>
+
+<form method="GET" class="mb-4">
+    <div class="row">
+        <div class="col-md-8">
+            <select class="form-select" name="specialization">
+                <option value="">All Specializations</option>
+                {% for spec in specializations %}
+                <option value="{{ spec }}" {% if spec == selected_specialization %}selected{% endif %}>{{ spec }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4">
+            <button type="submit" class="btn btn-primary w-100">Search</button>
+        </div>
+    </div>
+</form>
+
+<div class="row">
+    {% for doctor in doctors %}
+    <div class="col-md-6 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Dr. {{ doctor.user.username }}</h5>
+                <p class="card-text">
+                    <strong>Specialization:</strong> {{ doctor.specialization }}<br>
+                    <strong>Rating:</strong> {{ "%.1f"|format(doctor.rating) }} / 5.0<br>
+                    <strong>Email:</strong> {{ doctor.user.email }}<br>
+                    <strong>Phone:</strong> {{ doctor.user.phone }}
+                </p>
+                <a href="{{ url_for('patient.doctor_profile', doctor_id=doctor.id) }}" class="btn btn-primary">View Profile & Book</a>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12">
+        <div class="alert alert-info">No doctors found</div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

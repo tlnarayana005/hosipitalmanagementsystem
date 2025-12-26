@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Medical History - HMS{% endblock %}
+
+{% block content %}
+<h2>My Medical History</h2>
+
+<div class="card mt-4">
+    <div class="card-header bg-primary text-white">
+        <h5>Health Timeline</h5>
+    </div>
+    <div class="card-body">
+        {% if appointments %}
+        <div class="timeline">
+            {% for appointment in appointments %}
+            <div class="card mb-3 border-primary">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <h6>{{ appointment.appointment_date }}</h6>
+                        <span class="badge bg-primary">{{ appointment.doctor.specialization }}</span>
+                    </div>
+                    <p><strong>Doctor:</strong> Dr. {{ appointment.doctor.user.username }}</p>
+                    
+                    {% if appointment.treatment %}
+                    <hr>
+                    <p><strong>Diagnosis:</strong> {{ appointment.treatment.diagnosis }}</p>
+                    {% if appointment.treatment.prescription %}
+                    <p><strong>Prescription:</strong> {{ appointment.treatment.prescription }}</p>
+                    {% endif %}
+                    {% if appointment.treatment.notes %}
+                    <p><strong>Notes:</strong> {{ appointment.treatment.notes }}</p>
+                    {% endif %}
+                    <small class="text-muted">Recorded: {{ appointment.treatment.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                    {% else %}
+                    <p class="text-muted">No treatment record available</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <h5>No Medical History</h5>
+            <p>You don't have any completed appointments yet. Book an appointment with a doctor to start building your medical history.</p>
+            <a href="{{ url_for('patient.search_doctors') }}" class="btn btn-primary">Find a Doctor</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

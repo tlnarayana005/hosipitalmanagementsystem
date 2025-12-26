@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}Patient Dashboard - MediCare HMS{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="mb-4">
+        <h2><i class="bi bi-speedometer2"></i> Welcome, {{ session.username }}</h2>
+        <p class="text-muted mb-0">Manage your health and appointments</p>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-calendar-event"></i> Upcoming Appointments</h5>
+                </div>
+                <div class="card-body">
+                    {% if upcoming_appointments %}
+                    <div class="list-group list-group-flush">
+                        {% for appointment in upcoming_appointments %}
+                        <div class="list-group-item px-0">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div class="d-flex align-items-center flex-grow-1">
+                                    <i class="bi bi-person-badge me-3" style="font-size: 2.5rem; color: var(--primary-color);"></i>
+                                    <div>
+                                        <h6 class="mb-1">Dr. {{ appointment.doctor.user.username }}</h6>
+                                        <span class="badge bg-primary mb-2">{{ appointment.doctor.specialization }}</span>
+                                        <br>
+                                        <small class="text-muted">
+                                            <i class="bi bi-calendar"></i> {{ appointment.appointment_date }}
+                                            | <i class="bi bi-clock"></i> {{ appointment.appointment_time.strftime('%H:%M') }}
+                                        </small>
+                                    </div>
+                                </div>
+                                <span class="badge bg-{{ 'success' if appointment.status == 'Completed' else 'warning' }}">
+                                    {{ appointment.status }}
+                                </span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="mt-3">
+                        <a href="{{ url_for('patient.appointments') }}" class="btn btn-primary btn-sm w-100">
+                            <i class="bi bi-calendar-check"></i> View All Appointments
+                        </a>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-calendar-x" style="font-size: 3rem; color: var(--text-secondary);"></i>
+                        <p class="text-muted mt-3 mb-3">No upcoming appointments</p>
+                        <a href="{{ url_for('patient.search_doctors') }}" class="btn btn-primary">
+                            <i class="bi bi-search"></i> Find a Doctor
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-clock-history"></i> Recent Appointments</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_appointments %}
+                    <div class="list-group list-group-flush">
+                        {% for appointment in recent_appointments %}
+                        <div class="list-group-item px-0">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-person-badge me-3" style="font-size: 2.5rem; color: var(--info-color);"></i>
+                                    <div>
+                                        <h6 class="mb-1">Dr. {{ appointment.doctor.user.username }}</h6>
+                                        <small class="text-muted">
+                                            <i class="bi bi-calendar"></i> {{ appointment.appointment_date }}
+                                        </small>
+                                    </div>
+                                </div>
+                                <span class="badge bg-{{ 'success' if appointment.status == 'Completed' else 'warning' if appointment.status == 'Booked' else 'secondary' }}">
+                                    {{ appointment.status }}
+                                </span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-calendar-check" style="font-size: 3rem; color: var(--text-secondary);"></i>
+                        <p class="text-muted mt-3">No appointment history</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <a href="{{ url_for('patient.search_doctors') }}" class="text-decoration-none">
+                <div class="stat-card stat-card-primary">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5>Find Doctors</h5>
+                            <p class="mb-0">Search by specialization</p>
+                        </div>
+                        <i class="bi bi-search" style="font-size: 3rem; opacity: 0.3;"></i>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a href="{{ url_for('patient.medical_history') }}" class="text-decoration-none">
+                <div class="stat-card stat-card-success">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5>Medical History</h5>
+                            <p class="mb-0">View your health timeline</p>
+                        </div>
+                        <i class="bi bi-file-medical" style="font-size: 3rem; opacity: 0.3;"></i>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a href="{{ url_for('shared.profile') }}" class="text-decoration-none">
+                <div class="stat-card stat-card-info">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5>My Profile</h5>
+                            <p class="mb-0">Update your information</p>
+                        </div>
+                        <i class="bi bi-person-circle" style="font-size: 3rem; opacity: 0.3;"></i>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

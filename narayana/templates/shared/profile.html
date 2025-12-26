@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile - MediCare HMS{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="bi bi-person-circle" style="font-size: 6rem; color: var(--primary-color);"></i>
+                    </div>
+                    <h4>{{ user.full_name or user.username }}</h4>
+                    <p class="text-muted">{{ user.role|title }}</p>
+                    {% if user.role == 'patient' %}
+                    <p><strong>Medical ID:</strong> {{ user.patient_profile.medical_id }}</p>
+                    {% elif user.role == 'doctor' %}
+                    <p><strong>Specialization:</strong> {{ user.doctor_profile.specialization }}</p>
+                    <p><strong>Rating:</strong> {{ "%.1f"|format(user.doctor_profile.rating) }} / 5.0</p>
+                    {% endif %}
+                    <p class="text-muted"><small>Member since {{ user.created_at.strftime('%B %Y') }}</small></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-pencil-square"></i> Edit Profile</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <h6 class="mb-3" style="color: var(--primary-color);">Personal Information</h6>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="full_name" class="form-label">Full Name</label>
+                                <input type="text" class="form-control" id="full_name" name="full_name" value="{{ user.full_name or '' }}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" required>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="phone" class="form-label">Phone</label>
+                                <input type="tel" class="form-control" id="phone" name="phone" value="{{ user.phone or '' }}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="address" class="form-label">Address</label>
+                                <input type="text" class="form-control" id="address" name="address" value="{{ user.address or '' }}">
+                            </div>
+                        </div>
+
+                        {% if user.role == 'patient' %}
+                        <hr class="my-4">
+                        <h6 class="mb-3" style="color: var(--primary-color);">Medical Information</h6>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="blood_group" class="form-label">Blood Group</label>
+                                <select class="form-select" id="blood_group" name="blood_group">
+                                    <option value="">Select Blood Group</option>
+                                    {% for bg in ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] %}
+                                    <option value="{{ bg }}" {% if user.patient_profile.blood_group == bg %}selected{% endif %}>{{ bg }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="emergency_contact" class="form-label">Emergency Contact</label>
+                                <input type="tel" class="form-control" id="emergency_contact" name="emergency_contact" value="{{ user.patient_profile.emergency_contact or '' }}">
+                            </div>
+                        </div>
+                        {% elif user.role == 'doctor' %}
+                        <hr class="my-4">
+                        <h6 class="mb-3" style="color: var(--primary-color);">Professional Information</h6>
+                        
+                        <div class="mb-3">
+                            <label for="bio" class="form-label">Bio</label>
+                            <textarea class="form-control" id="bio" name="bio" rows="3">{{ user.doctor_profile.bio or '' }}</textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="qualifications" class="form-label">Qualifications</label>
+                            <textarea class="form-control" id="qualifications" name="qualifications" rows="2">{{ user.doctor_profile.qualifications or '' }}</textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="experience_years" class="form-label">Years of Experience</label>
+                            <input type="number" class="form-control" id="experience_years" name="experience_years" value="{{ user.doctor_profile.experience_years or '' }}">
+                        </div>
+                        {% endif %}
+
+                        <hr class="my-4">
+                        <h6 class="mb-3" style="color: var(--primary-color);">Change Password</h6>
+                        
+                        <div class="mb-3">
+                            <label for="new_password" class="form-label">New Password (leave blank to keep current)</label>
+                            <input type="password" class="form-control" id="new_password" name="new_password" minlength="6">
+                            <small class="text-muted">Minimum 6 characters</small>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle"></i> Save Changes
+                            </button>
+                            <a href="/" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

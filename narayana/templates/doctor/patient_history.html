@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Patient History - HMS{% endblock %}
+
+{% block content %}
+<h2>Patient Medical History</h2>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h5>Patient Information</h5>
+    </div>
+    <div class="card-body">
+        <p><strong>Name:</strong> {{ patient.user.username }}</p>
+        <p><strong>Medical ID:</strong> {{ patient.medical_id }}</p>
+        <p><strong>Email:</strong> {{ patient.user.email }}</p>
+        <p><strong>Phone:</strong> {{ patient.user.phone }}</p>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h5>Treatment History</h5>
+    </div>
+    <div class="card-body">
+        {% if appointments %}
+        <div class="timeline">
+            {% for appointment in appointments %}
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h6>{{ appointment.appointment_date }} - Dr. {{ appointment.doctor.user.username }}</h6>
+                    {% if appointment.treatment %}
+                    <p><strong>Diagnosis:</strong> {{ appointment.treatment.diagnosis }}</p>
+                    <p><strong>Prescription:</strong> {{ appointment.treatment.prescription or 'N/A' }}</p>
+                    <p><strong>Notes:</strong> {{ appointment.treatment.notes or 'N/A' }}</p>
+                    <small class="text-muted">Recorded: {{ appointment.treatment.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                    {% else %}
+                    <p class="text-muted">No treatment record available</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-muted">No treatment history available</p>
+        {% endif %}
+    </div>
+</div>
+
+<a href="{{ url_for('doctor.appointments') }}" class="btn btn-secondary mt-3">Back to Appointments</a>
+{% endblock %}

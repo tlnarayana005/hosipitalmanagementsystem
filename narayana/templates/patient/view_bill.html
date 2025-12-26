@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+
+{% block title %}Bill #{{ bill.id }} - MediCare HMS{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="invoice-header">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h2 class="mb-0"><i class="bi bi-hospital"></i> MediCare HMS</h2>
+                            <p class="mb-0">Hospital Management System</p>
+                        </div>
+                        <div class="text-end">
+                            <h4>INVOICE</h4>
+                            <p class="mb-0">Bill #{{ bill.id }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="invoice-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6 class="text-primary">Bill To:</h6>
+                            <p class="mb-1"><strong>{{ bill.patient.user.full_name or bill.patient.user.username }}</strong></p>
+                            <p class="mb-1">Medical ID: {{ bill.patient.medical_id }}</p>
+                            <p class="mb-1">{{ bill.patient.user.email }}</p>
+                            <p class="mb-0">{{ bill.patient.user.phone }}</p>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <h6 class="text-primary">Doctor:</h6>
+                            <p class="mb-1"><strong>Dr. {{ bill.doctor.user.username }}</strong></p>
+                            <p class="mb-1">{{ bill.doctor.specialization }}</p>
+                            <p class="mb-0">{{ bill.doctor.user.email }}</p>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <p class="mb-1"><strong>Appointment Date:</strong> {{ bill.appointment.appointment_date }}</p>
+                            <p class="mb-0"><strong>Appointment Time:</strong> {{ bill.appointment.appointment_time.strftime('%H:%M') }}</p>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <p class="mb-1"><strong>Bill Date:</strong> {{ bill.created_at.strftime('%B %d, %Y') }}</p>
+                            <p class="mb-0"><strong>Status:</strong> 
+                                <span class="payment-status-{{ bill.payment_status.lower() }}">
+                                    {{ bill.payment_status }}
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Description</th>
+                                <th class="text-end">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Consultation Fee</td>
+                                <td class="text-end">${{ "%.2f"|format(bill.consultation_fee) }}</td>
+                            </tr>
+                            {% if bill.lab_charges > 0 %}
+                            <tr>
+                                <td>Laboratory Tests & Diagnostics</td>
+                                <td class="text-end">${{ "%.2f"|format(bill.lab_charges) }}</td>
+                            </tr>
+                            {% endif %}
+                            {% if bill.medicine_charges > 0 %}
+                            <tr>
+                                <td>Medicines & Prescriptions</td>
+                                <td class="text-end">${{ "%.2f"|format(bill.medicine_charges) }}</td>
+                            </tr>
+                            {% endif %}
+                            {% if bill.procedure_charges > 0 %}
+                            <tr>
+                                <td>Medical Procedures</td>
+                                <td class="text-end">${{ "%.2f"|format(bill.procedure_charges) }}</td>
+                            </tr>
+                            {% endif %}
+                            {% if bill.other_charges > 0 %}
+                            <tr>
+                                <td>Other Charges</td>
+                                <td class="text-end">${{ "%.2f"|format(bill.other_charges) }}</td>
+                            </tr>
+                            {% endif %}
+                            <tr>
+                                <td><strong>Subtotal</strong></td>
+                                <td class="text-end"><strong>${{ "%.2f"|format(bill.subtotal) }}</strong></td>
+                            </tr>
+                            <tr>
+                                <td>Tax (5%)</td>
+                                <td class="text-end">${{ "%.2f"|format(bill.tax_amount) }}</td>
+                            </tr>
+                            {% if bill.discount_amount > 0 %}
+                            <tr class="text-success">
+                                <td>Discount</td>
+                                <td class="text-end">-${{ "%.2f"|format(bill.discount_amount) }}</td>
+                            </tr>
+                            {% endif %}
+                            <tr class="table-active">
+                                <td><h5 class="mb-0">Total Amount</h5></td>
+                                <td class="text-end"><h5 class="mb-0">${{ "%.2f"|format(bill.total_amount) }}</h5></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    {% if bill.payment_status == 'Paid' %}
+                    <div class="alert alert-success">
+                        <h6><i class="bi bi-check-circle"></i> Payment Received</h6>
+                        <p class="mb-1"><strong>Payment Method:</strong> {{ bill.payment_method }}</p>
+                        <p class="mb-1"><strong>Payment Date:</strong> {{ bill.payment_date.strftime('%B %d, %Y %H:%M') }}</p>
+                        <p class="mb-0"><strong>Transaction ID:</strong> {{ bill.transaction_id }}</p>
+                    </div>
+                    {% endif %}
+
+                    {% if bill.notes %}
+                    <div class="mt-3">
+                        <h6 class="text-primary">Notes:</h6>
+                        <p class="text-muted">{{ bill.notes }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="invoice-footer">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{{ url_for('patient.bills') }}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Back to Bills
+                        </a>
+                        <div class="d-flex gap-2">
+                            <button onclick="window.print()" class="btn btn-info">
+                                <i class="bi bi-printer"></i> Print
+                            </button>
+                            {% if bill.payment_status == 'Pending' %}
+                            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#payModal">
+                                <i class="bi bi-credit-card"></i> Pay Now
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Payment Modal -->
+{% if bill.payment_status == 'Pending' %}
+<div class="modal fade" id="payModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Pay Bill #{{ bill.id }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('patient.pay_bill', bill_id=bill.id) }}">
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <strong>Amount to Pay:</strong> ${{ "%.2f"|format(bill.total_amount) }}
+                    </div>
+                    <div class="mb-3">
+                        <label for="payment_method" class="form-label">Payment Method</label>
+                        <select class="form-select" id="payment_method" name="payment_method" required>
+                            <option value="">Select Payment Method</option>
+                            <option value="Cash">Cash</option>
+                            <option value="Credit Card">Credit Card</option>
+                            <option value="Debit Card">Debit Card</option>
+                            <option value="Insurance">Insurance</option>
+                            <option value="Online Payment">Online Payment</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-circle"></i> Confirm Payment
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<style>
+@media print {
+    .navbar, .btn, .modal, .invoice-footer { display: none !important; }
+    .card { box-shadow: none !important; border: 1px solid #000 !important; }
+}
+</style>
+{% endblock %}

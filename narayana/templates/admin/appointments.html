@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Appointments - MediCare HMS{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2 class="mb-4"><i class="bi bi-calendar-check"></i> All Appointments</h2>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="stat-card stat-card-info">
+                <h5>Total</h5>
+                <h2>{{ total_appointments }}</h2>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card stat-card-warning">
+                <h5>Booked</h5>
+                <h2>{{ booked }}</h2>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card stat-card-success">
+                <h5>Completed</h5>
+                <h2>{{ completed }}</h2>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card stat-card-danger">
+                <h5>Cancelled</h5>
+                <h2>{{ cancelled }}</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Appointment List</h5>
+                <form method="GET" class="d-flex gap-2">
+                    <select class="form-select" name="status" onchange="this.form.submit()">
+                        <option value="">All Status</option>
+                        <option value="Booked" {% if status_filter == 'Booked' %}selected{% endif %}>Booked</option>
+                        <option value="Completed" {% if status_filter == 'Completed' %}selected{% endif %}>Completed</option>
+                        <option value="Cancelled" {% if status_filter == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+                    </select>
+                </form>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Patient</th>
+                            <th>Doctor</th>
+                            <th>Specialization</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for appointment in appointments %}
+                        <tr>
+                            <td><strong>#{{ appointment.id }}</strong></td>
+                            <td>
+                                <i class="bi bi-person"></i> {{ appointment.patient.user.username }}
+                                <br><small class="text-muted">{{ appointment.patient.medical_id }}</small>
+                            </td>
+                            <td>
+                                <i class="bi bi-person-badge"></i> Dr. {{ appointment.doctor.user.username }}
+                            </td>
+                            <td><span class="badge bg-primary">{{ appointment.doctor.specialization }}</span></td>
+                            <td>{{ appointment.appointment_date }}</td>
+                            <td>{{ appointment.appointment_time.strftime('%H:%M') }}</td>
+                            <td>
+                                <span class="badge bg-{{ 'success' if appointment.status == 'Completed' else 'warning' if appointment.status == 'Booked' else 'secondary' }}">
+                                    {{ appointment.status }}
+                                </span>
+                            </td>
+                            <td><small class="text-muted">{{ appointment.created_at.strftime('%Y-%m-%d') }}</small></td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="8" class="text-center text-muted">No appointments found</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}My Appointments - HMS{% endblock %}
+
+{% block content %}
+<h2>My Appointments</h2>
+
+<table class="table table-striped mt-4">
+    <thead>
+        <tr>
+            <th>Patient</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for appointment in appointments %}
+        <tr>
+            <td>
+                {{ appointment.patient.user.username }}
+                <br><small class="text-muted">{{ appointment.patient.medical_id }}</small>
+            </td>
+            <td>{{ appointment.appointment_date }}</td>
+            <td>{{ appointment.appointment_time.strftime('%H:%M') }}</td>
+            <td>
+                <span class="badge bg-{{ 'success' if appointment.status == 'Completed' else 'warning' if appointment.status == 'Booked' else 'secondary' }}">
+                    {{ appointment.status }}
+                </span>
+            </td>
+            <td>
+                {% if appointment.status == 'Booked' %}
+                <form method="POST" action="{{ url_for('doctor.complete_appointment', appointment_id=appointment.id) }}" style="display:inline;">
+                    <button type="submit" class="btn btn-sm btn-success">Complete</button>
+                </form>
+                <form method="POST" action="{{ url_for('doctor.cancel_appointment', appointment_id=appointment.id) }}" style="display:inline;">
+                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Cancel this appointment?')">Cancel</button>
+                </form>
+                {% elif appointment.status == 'Completed' %}
+                <a href="{{ url_for('doctor.add_treatment', appointment_id=appointment.id) }}" class="btn btn-sm btn-primary">
+                    {{ 'Edit' if appointment.treatment else 'Add' }} Treatment
+                </a>
+                <a href="{{ url_for('doctor.create_bill', appointment_id=appointment.id) }}" class="btn btn-sm btn-success">
+                    <i class="bi bi-receipt"></i> {{ 'Edit' if appointment.bill else 'Create' }} Bill
+                </a>
+                <a href="{{ url_for('doctor.patient_history', patient_id=appointment.patient.id) }}" class="btn btn-sm btn-info">View History</a>
+                {% endif %}
+            </td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="5" class="text-center">No appointments found</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

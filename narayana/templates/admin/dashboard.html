@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - MediCare HMS{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2 class="mb-4"><i class="bi bi-speedometer2"></i> Admin Dashboard</h2>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="stat-card stat-card-primary">
+                <h5>Total Doctors</h5>
+                <h2>{{ doctor_count }}</h2>
+                <p class="mb-0"><i class="bi bi-person-badge"></i> Medical Professionals</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card stat-card-success">
+                <h5>Total Patients</h5>
+                <h2>{{ patient_count }}</h2>
+                <p class="mb-0"><i class="bi bi-people"></i> Registered Patients</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card stat-card-info">
+                <h5>Total Appointments</h5>
+                <h2>{{ appointment_count }}</h2>
+                <p class="mb-0"><i class="bi bi-calendar-check"></i> All Time</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card stat-card-warning">
+                <h5>Specializations</h5>
+                <h2>{{ appointments_by_spec|length }}</h2>
+                <p class="mb-0"><i class="bi bi-hospital"></i> Departments</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-pie-chart"></i> Appointments by Specialization</h5>
+                </div>
+                <div class="card-body">
+                    {% if appointments_by_spec %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Specialization</th>
+                                    <th>Appointments</th>
+                                    <th>Percentage</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for spec, count in appointments_by_spec %}
+                                <tr>
+                                    <td><i class="bi bi-circle-fill" style="color: var(--primary-color); font-size: 0.5rem;"></i> {{ spec }}</td>
+                                    <td><strong>{{ count }}</strong></td>
+                                    <td>
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar" role="progressbar" 
+                                                 style="width: {{ (count / appointment_count * 100)|round }}%; background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);"
+                                                 aria-valuenow="{{ count }}" aria-valuemin="0" aria-valuemax="{{ appointment_count }}">
+                                                {{ (count / appointment_count * 100)|round }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center">No appointment data available</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-star"></i> Doctor Performance</h5>
+                </div>
+                <div class="card-body">
+                    {% if doctor_performance %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Doctor</th>
+                                    <th>Specialization</th>
+                                    <th>Appointments</th>
+                                    <th>Rating</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for username, spec, total, rating in doctor_performance %}
+                                <tr>
+                                    <td><strong>Dr. {{ username }}</strong></td>
+                                    <td><span class="badge bg-primary">{{ spec }}</span></td>
+                                    <td>{{ total or 0 }}</td>
+                                    <td>
+                                        <span class="badge bg-warning text-dark">
+                                            <i class="bi bi-star-fill"></i> {{ "%.1f"|format(rating or 0) }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center">No doctor data available</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mt-2">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-graph-up"></i> Appointment Trends (Last 30 Days)</h5>
+                </div>
+                <div class="card-body">
+                    {% if appointments_by_date %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Appointments</th>
+                                    <th>Trend</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for date, count in appointments_by_date[-10:] %}
+                                <tr>
+                                    <td>{{ date }}</td>
+                                    <td><strong>{{ count }}</strong></td>
+                                    <td>
+                                        <div class="progress" style="height: 20px; width: 200px;">
+                                            <div class="progress-bar bg-success" role="progressbar" 
+                                                 style="width: {{ (count / 10 * 100)|round }}%"
+                                                 aria-valuenow="{{ count }}" aria-valuemin="0" aria-valuemax="10">
+                                                {{ count }}
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center">No appointment trends available</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}Doctor Dashboard - MediCare HMS{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="bi bi-speedometer2"></i> Welcome, Dr. {{ session.username }}</h2>
+            <p class="text-muted mb-0">{{ doctor.specialization }} Department</p>
+        </div>
+        <div class="text-end">
+            <div class="stat-card stat-card-warning d-inline-block" style="padding: 1rem 2rem;">
+                <h5 class="mb-0">Your Rating</h5>
+                <h2 class="mb-0"><i class="bi bi-star-fill"></i> {{ "%.1f"|format(doctor.rating) }}</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-calendar-day"></i> Today's Appointments</h5>
+                </div>
+                <div class="card-body">
+                    {% if today_appointments %}
+                    <div class="list-group list-group-flush">
+                        {% for appointment in today_appointments %}
+                        <div class="list-group-item px-0">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-person-circle me-3" style="font-size: 2.5rem; color: var(--primary-color);"></i>
+                                    <div>
+                                        <h6 class="mb-1">{{ appointment.patient.user.full_name or appointment.patient.user.username }}</h6>
+                                        <small class="text-muted">
+                                            <i class="bi bi-clock"></i> {{ appointment.appointment_time.strftime('%H:%M') }}
+                                            | <i class="bi bi-card-text"></i> {{ appointment.patient.medical_id }}
+                                        </small>
+                                    </div>
+                                </div>
+                                <span class="badge bg-{{ 'success' if appointment.status == 'Completed' else 'warning' }}">
+                                    {{ appointment.status }}
+                                </span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-calendar-x" style="font-size: 3rem; color: var(--text-secondary);"></i>
+                        <p class="text-muted mt-3">No appointments scheduled for today</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-calendar-week"></i> Upcoming Appointments</h5>
+                </div>
+                <div class="card-body">
+                    {% if upcoming_appointments %}
+                    <div class="list-group list-group-flush">
+                        {% for appointment in upcoming_appointments %}
+                        <div class="list-group-item px-0">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-person-circle me-3" style="font-size: 2.5rem; color: var(--info-color);"></i>
+                                    <div>
+                                        <h6 class="mb-1">{{ appointment.patient.user.full_name or appointment.patient.user.username }}</h6>
+                                        <small class="text-muted">
+                                            <i class="bi bi-calendar"></i> {{ appointment.appointment_date }}
+                                            | <i class="bi bi-clock"></i> {{ appointment.appointment_time.strftime('%H:%M') }}
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-calendar-check" style="font-size: 3rem; color: var(--text-secondary);"></i>
+                        <p class="text-muted mt-3">No upcoming appointments</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <a href="{{ url_for('doctor.appointments') }}" class="text-decoration-none">
+                <div class="stat-card stat-card-primary">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5>Manage Appointments</h5>
+                            <p class="mb-0">View and manage all appointments</p>
+                        </div>
+                        <i class="bi bi-calendar-check" style="font-size: 3rem; opacity: 0.3;"></i>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a href="{{ url_for('doctor.availability') }}" class="text-decoration-none">
+                <div class="stat-card stat-card-success">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5>Set Availability</h5>
+                            <p class="mb-0">Manage your schedule</p>
+                        </div>
+                        <i class="bi bi-clock-history" style="font-size: 3rem; opacity: 0.3;"></i>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a href="{{ url_for('doctor.patients_list') }}" class="text-decoration-none">
+                <div class="stat-card stat-card-info">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5>My Patients</h5>
+                            <p class="mb-0">View patient records</p>
+                        </div>
+                        <i class="bi bi-people" style="font-size: 3rem; opacity: 0.3;"></i>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
